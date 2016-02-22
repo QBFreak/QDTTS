@@ -3,10 +3,22 @@
 
 rednet.open("top")
 
-serverName = "Clara"
+local myName = "Clara"
 
-print("Starting loop, CTRL+T to terminate")
-while true do
+function addTurtle(tName)
+	if tName == nil then
+		return
+	end
+	turtles[tables.getn(turtles)] = tName
+end
+
+print("Server '"..myName.."' started.")
+rednet.broadcast("SERVER "..myName)
+
+turtles = {}
+
+local running = true
+while running do
 	id,msg = rednet.receive()
 	
 	message = {}
@@ -21,6 +33,13 @@ while true do
 	
 	if command == "HELLO" then
 		print("Greeting new Turtle " .. turtleName)
-		rednet.broadcast("SERVER "..serverName)
+		rednet.broadcast("SERVER "..myName)
+		addTurtle(turtleName)
+	end
+	if command == "SHUTDOWN" then
+		print("Console "..turtleName.." requested a shutdown")
+		rednet.broadcast("GOODBYE "..myName)
+		running = false
 	end
 end
+print("Server '"..myName.."' stopped.")
