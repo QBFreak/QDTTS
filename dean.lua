@@ -4,7 +4,7 @@
 myName = "Dean"
 
 rednet.open("left")
-rednet.broadcast("HELLO Dean")
+rednet.broadcast("HELLO Dean Turtle", "QDTTS")
 
 id,msg = rednet.receive(5)
 if id then
