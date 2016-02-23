@@ -7,6 +7,18 @@ A hacked together project to get my feet wet with [ComputerCraft](http://www.com
 * Runs a continious loop listening for RedNet messages and responding to them
 * Maintains a list of all registered turtles
 
+#### Turtle States
+* idle
+* assigned
+* running
+
+#### Task states
+* pending
+* assigned
+* running
+* incomplete
+* complete
+
 ### Turtle (Turtle)
 [turtle.lua](https://github.com/QBFreak/QDTTS/blob/master/turtle.lua)
 * Registers with the server
