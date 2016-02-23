@@ -132,23 +132,36 @@ while running do
 		end
 		-- Query a Turtle's status
 		if command == "QUERY" then
-			local queriedTurtle = message[3] + 0 -- Add zero to convert our string to a number
+			local queriedTurtle = message[3]
+			local tID = nil
 			
 			print("Console "..turtleName.." requested status of turtle "..queriedTurtle)
-			local turtleData = turtles[queriedTurtle]
-			
-			print(type(queriedTurtle))
-			print("--- Turtles ---")
-			for i,t in pairs(turtles) do
-				print(i,t)
+
+			-- Determine whether queriedTurtle is a name or a number
+			if string.find(queriedTurtle, "[^%d]") then
+				-- Name, we need to look up the index number
+				for i,t in pairs(turtles) do
+					--print(t.name,t.name==queriedTurtle)
+					if string.lower(t.name) == string.lower(queriedTurtle) then
+						tID = i
+					end
+				end
+			else
+				-- Number, however it's a string. We need to convert it to a number
+				tID = queriedTurtle + 0
 			end
 			
-			local queryResponse = queriedTurtle .. " "
-			queryResponse = queryResponse .. turtleData.name .. " "
-			queryResponse = queryResponse .. turtleData.status .. " "
-			queryResponse = queryResponse .. turtleData.priority .. " "
-			queryResponse = queryResponse .. turtleData.type
-			rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
+			if tID == nil then
+				rednet.broadcast("QUERYR "..myName.." "..queriedTurtle.." NOTFOUND", "QDTTS")
+			else
+				local turtleData = turtles[tID]
+				local queryResponse = tID .. " "
+				queryResponse = queryResponse .. turtleData.name .. " "
+				queryResponse = queryResponse .. turtleData.status .. " "
+				queryResponse = queryResponse .. turtleData.priority .. " "
+				queryResponse = queryResponse .. turtleData.type
+				rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
+			end
 		end
 		
 		-- List turtles

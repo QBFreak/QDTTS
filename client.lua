@@ -51,8 +51,8 @@ end
 if command == "query" then
 	queryID = tArgs[2]
 	if queryID == nil then
-		print("Usage: client query <number>")
-		print("  Number corresponds to the RedNet node number of the turtle you wish to query")
+		print("Usage: client query <turtle>")
+		print("  Name or RedNet node number of the turtle you wish to query")
 	else
 		rednet.broadcast("QUERY "..myName.." "..queryID, "QDTTS")
 		local command = nil
@@ -77,20 +77,27 @@ if command == "query" then
 		if command == nil then
 			print("Request timed out")
 		else
-			if table.getn(message) < 7 then
-				print("Error: Malformed query response")
+			if message[4] == "NOTFOUND" then
+				local server = message[2]
+				local rName = message[3]
+				print(server.." was unable to locate a turtle named '"..rName.."'")
+			else
+				if message[7] == nil then
+					print("Error: Malformed query response: "..msg)
+				else
+					local server = message[2]
+					local rID = message[3]
+					local rName = message[4]
+					local rStatus = message[5]
+					local rPriority = message[6]
+					local rType = message[7]
+					print("------ " .. rName .. " ------")
+					print("RedNet ID:  " .. rID)
+					print("Type:       " .. rType)
+					print("Status:     " .. rStatus)
+					print("Priority:   " .. rPriority)
+				end
 			end
-			local server = message[2]
-			local rID = message[3]
-			local rName = message[4]
-			local rStatus = message[5]
-			local rPriority = message[6]
-			local rType = message[7]
-			print("------ " .. rName .. "------")
-			print("RedNet ID:  " .. rID)
-			print("Type:       " .. rType)
-			print("Status:     " .. rStatus)
-			print("Priority:   " .. rPriority)
 		end
 	end
 end
