@@ -30,13 +30,26 @@ function addTask(tName, tPriority, tType, tFile)
 	taskData.status = "pending"
 	
 	-- Check and see if we have any of the appropriate turtles free
-	if false then
-		-- Place holder
-	else
-		tID = table.getn(tasks) + 1
-		tasks[tID] = taskData
+	local turtleID = getAvailableTurtle(taskData)
+	if turtleID ~= nil then
+		assignTask(turtleID, taskData)
 	end
+
+	tID = table.getn(tasks) + 1
+	tasks[tID] = taskData
+
 	return true
+end
+
+-- Finds the next available turtle to take <task>
+--	Returns index of turtle if a turtle is found
+--	Returns nil if no turtle is available
+function getAvailableTurtle(task)
+	return nil
+end
+
+function assignTask(tID, tData)
+	-- TODO
 end
 
 turtles = {}
