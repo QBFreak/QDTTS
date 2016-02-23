@@ -18,6 +18,27 @@ function addTurtle(tID, tName, tType)
 	return true
 end
 
+function addTask(tName, tPriority, tType, tFile)
+	if tName == nil then
+		return false
+	end
+	local taskData = {}
+	taskData.name = tName
+	taskData.priority = tPriority
+	taskData.type = tType
+	taskData.file = tFile
+	taskData.status = "pending"
+	
+	-- Check and see if we have any of the appropriate turtles free
+	if false then
+		-- Place holder
+	else
+		tID = table.getn(tasks) + 1
+		tasks[tID] = taskData
+	end
+	return true
+end
+
 turtles = {}
 tasks = {}
 
@@ -86,6 +107,20 @@ while running do
 			queryResponse = queryResponse .. turtleData.priority .. " "
 			queryResponse = queryResponse .. turtleData.type
 			rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
+		end
+		
+		-- Add a task to the task queue
+		if command == "ADDTASK" then
+			if message[3] == nil or message[4] == nil or message[5] == nil or message[6] == nil then
+				print("Malformed ADDTASK packet received from "..id..": "..msg)
+			else
+				local tName = message[3]
+				local tPriority = message[4]
+				local tType = message[5]
+				local tFile = message[6]
+				print("Console "..turtleName.." added task "..tName.." ("..tFile..")")								
+				addTask(tName, tPriority, tType, tFile)
+			end
 		end
 	else
 		print("Malformed packet received from "..id..": "..msg)
