@@ -26,6 +26,7 @@ while tries < 6 and success == false do
 
 			if command == "SERVER" then
 				if message[2] == nil then
+					print("Malformed SERVER packet received: "..msg)
 				else
 					print("Registered with server ".. message[2])
 					success = true
