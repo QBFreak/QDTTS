@@ -134,7 +134,7 @@ while running do
 		if command == "QUERY" then
 			local queriedTurtle = message[3] + 0 -- Add zero to convert our string to a number
 			
-			print("Console "..turtleName.." requested status of turtle "..queriedTurtle..".")
+			print("Console "..turtleName.." requested status of turtle "..queriedTurtle)
 			local turtleData = turtles[queriedTurtle]
 			
 			print(type(queriedTurtle))
@@ -149,6 +149,49 @@ while running do
 			queryResponse = queryResponse .. turtleData.priority .. " "
 			queryResponse = queryResponse .. turtleData.type
 			rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
+		end
+		
+		-- List turtles
+		if command == "LISTTURTLES" then
+			print("Console "..turtleName.." requested a list of all turtles")
+			rednet.broadcast("LISTTURTLESR "..myName.." BEGINLIST", "QDTTS")
+			for index,turtle in pairs(turtles) do
+				local listResponse = "LISTTURTLESR "..myName.." LIST "
+				listResponse = listResponse.. index .." "
+				listResponse = listResponse.. turtle.name .." "
+				listResponse = listResponse.. turtle.status .." "
+				listResponse = listResponse.. turtle.priority .." "
+				listResponse = listResponse.. turtle.type .." "
+				if turtle.task == nil then
+					listResponse = listResponse.." NO"
+				else
+					listResponse = listResponse.." YES"
+				end
+				rednet.broadcast(listResponse, "QDTTS")
+			end
+			rednet.broadcast("LISTTURTLESR "..myName.." ENDLIST", "QDTTS")
+		end
+		
+		-- List tasks
+		if command == "LISTTASKS" then
+			print("Console "..turtleName.." requested a list of all tasks")
+			rednet.broadcast("LISTTASKSR "..myName.." BEGINLIST", "QDTTS")
+			for index,task in pairs(tasks) do
+				local listResponse = "LISTTASKSR "..myName.." LIST "
+				listResponse = listResponse.. index .." "
+				listResponse = listResponse.. task.name .." "
+				listResponse = listResponse.. task.priority .." "
+				listResponse = listResponse.. task.type .." "
+				listResponse = listResponse.. task.file .." "
+				listResponse = listResponse.. task.status .." "
+				if task.turtle == nil then
+					listResponse = listResponse.." NO"
+				else
+					listResponse = listResponse.." YES"
+				end
+				rednet.broadcast(listResponse, "QDTTS")
+			end
+			rednet.broadcast("LISTTASKSR "..myName.." ENDLIST", "QDTTS")
 		end
 		
 		-- Add a task to the task queue

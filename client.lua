@@ -4,7 +4,7 @@
 local tArgs = { ... }
 myName = "Everly"
 
-validCommands = {"shutdown", "query", "addtask"}
+validCommands = {"addtask", "list", "query", "shutdown"}
 
 function displayHelp()
 	print("QDTTS Control Console")
@@ -110,4 +110,73 @@ if command == "addtask" then
 	
 	rednet.broadcast("ADDTASK "..myName.." "..tName.." "..tPriority.." "..tType.." "..tFile, "QDTTS")
 	print("Added task "..tName)
+end
+
+if command == "list" then
+	if tArgs[2] ~= "turtles" and tArgs[2] ~= "tasks" then
+		print("Usage: client list <tasks|turtles>")
+		print("Example: client list turtles")
+	else
+		timeouts = 0
+		started = false
+		completed = false
+		while timeouts < 5 and completed == false do
+			if started == false then
+				print("Requesting ".. tArgs[2] .." from server")
+				rednet.broadcast("LIST"..string.upper(tArgs[2].." "..myName), "QDTTS")
+			end
+			id,msg = rednet.receive("QDTTS", 5)
+			if id == nil then
+				timeouts = timeouts + 1
+			end
+			
+			message = {}
+			count = 0
+			if msg ~= nil then
+				for i in string.gmatch(msg, "%S+") do
+					count = count + 1
+					message[count] = i
+				end
+				
+				if count > 1 then
+					local command = message[1]
+					
+					if command == "LISTTURTLESR" or command == "LISTTASKSR" then
+						if message[3] ~= "BEGINLIST" and message[3] ~= "LIST" and message[3] ~= "ENDLIST" then
+							print("Malformed list packet received: "..msg)
+						else
+							if message[3] == "BEGINLIST" then
+								print("Begin list from server ".. message[2])
+								started = true
+							end
+							if message[3] == "ENDLIST" then							
+								print("End of list from server ".. message[2])
+								completed = true
+							end
+							if message[3] == "LIST" then
+								if command == "LISTTURTLESR" then
+									if message[9] == nil then
+										print("Malformed list response: "..msg)
+									else
+										print(message[4], message[5], message[6], message[7], message[8], message[9])
+									end
+								end
+								if command == "LISTTASKSR" then
+									if message[9] == nil then
+										print("Malformed list response: "..msg)
+									else
+										print(message[4], message[5], message[6], message[7], message[8], message[9], message[10])
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		if completed == false then
+			print("No response from server!")
+		end
+	end
 end
