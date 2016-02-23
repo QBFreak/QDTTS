@@ -32,7 +32,7 @@ function addTask(tName, tPriority, tType, tFile)
 	-- Check and see if we have any of the appropriate turtles free
 	local turtleID = getAvailableTurtle(taskData)
 	if turtleID ~= nil then
-		assignTask(turtleID, taskData)
+		assignTask(turtles[turtleID], taskData)
 	end
 
 	tID = table.getn(tasks) + 1
@@ -45,11 +45,40 @@ end
 --	Returns index of turtle if a turtle is found
 --	Returns nil if no turtle is available
 function getAvailableTurtle(task)
+	if task == nil then
+		return nil
+	end
+	
+	-- See if any turtles are idle
+	for tID,tData in pairs(turtles) do
+		if tData.status == "idle" then
+			return tID
+		end
+	end
+	
+	-- Looks like we couldn't find any free turtles
 	return nil
 end
 
-function assignTask(tID, tData)
-	-- TODO
+-- Assign a task to a turtle
+--	<turtle> and <task> are tables out of their respective turtle and task tables
+function assignTask(turtle, task)
+	-- If the turtle was busy, mark the current task incomplete
+	if turtle.status ~= idle then
+		turtle.task = "incomplete"
+	end
+	
+	-- Assign the turtle the new task
+	turtle.task = task
+	turtle.status = "assigned"
+	turtle.priority = task.priority
+	
+	-- Update the task
+	task.turtle = turtle
+	task.status = "assigned"
+	
+	-- Transmit the assignment
+	rednet.broadcast("ASSIGN "..myName.." ".. turtle.name .." ".. task.file)
 end
 
 turtles = {}
