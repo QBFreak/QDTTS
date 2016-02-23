@@ -108,10 +108,39 @@ if command == "addtask" then
 	tType = tArgs[4]
 	tFile = tArgs[5]
 	
+	if not type(tPriority) == "number" then
+		print("The priority must be a number between 0 and 5 (inclusive)")
+		return
+	end
+	
+	if tPriority < 0 or tPriority > 5 then
+		print("The priority must be a number between 0 and 5 (inclusive)")
+		return
+	end
+	
+	validTypes = {"turtle", "mining", "felling", "melee", "digging", "farming", "crafty"}
+	validType = false
+	for i,typ in ipairs(validTypes) do
+		if tType == typ then
+			validType = true
+		end
+	end
+	
+	if validType == false then
+	print("Invalid turtle type.")
+		local validTypesString = ""
+		for i,typ in ipairs(validTypes) do
+			validTypesString = validTypesString.." "..typ
+		end
+		print("Valid types:"..validTypesString)
+		return
+	end
+	
 	rednet.broadcast("ADDTASK "..myName.." "..tName.." "..tPriority.." "..tType.." "..tFile, "QDTTS")
 	print("Added task "..tName)
 end
 
+-- List turtles and tasks
 if command == "list" then
 	if tArgs[2] ~= "turtles" and tArgs[2] ~= "tasks" then
 		print("Usage: client list <tasks|turtles>")
