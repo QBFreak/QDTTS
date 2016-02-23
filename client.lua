@@ -4,11 +4,11 @@
 local tArgs = { ... }
 myName = "Everly"
 
-validCommands = {"shutdown", "query"}
+validCommands = {"shutdown", "query", "addtask"}
 
 function displayHelp()
 	print("QDTTS Control Console")
-	print("Usage: "..string.lower(myName).." <command>")
+	print("Usage: client <command>")
 	displayValidCommands()
 end
 
@@ -51,7 +51,7 @@ end
 if command == "query" then
 	queryID = tArgs[2]
 	if queryID == nil then
-		print("Usage: "..string.lower(myName).." query <number>")
+		print("Usage: client query <number>")
 		print("  Number corresponds to the RedNet node number of the turtle you wish to query")
 	else
 		rednet.broadcast("QUERY "..myName.." "..queryID, "QDTTS")
@@ -93,4 +93,21 @@ if command == "query" then
 			print("Priority:   " .. rPriority)
 		end
 	end
+end
+
+-- Add a task
+if command == "addtask" then
+	if tArgs[5] == nil then
+		print("Usage: client addtask <name> <priority> <type> <file>")
+		print("Example: client addtask foo normal turtle foo")
+		return
+	end
+	
+	tName = tArgs[2]
+	tPriority = tArgs[3]
+	tType = tArgs[4]
+	tFile = tArgs[5]
+	
+	rednet.broadcast("ADDTASK "..myName.." "..tName.." "..tPriority.." "..tType.." "..tFile, "QDTTS")
+	print("Added task "..tName)
 end
