@@ -1,8 +1,8 @@
--- dean.lua v1.0 - Dean Winchester - He's been to hell and back. Litterally.
---	Quick and Dirty Turtle Task System - Client
+-- turtle.lua v1.0 - Turtle object
+--	Quick and Dirty Turtle Task System
 
 
-local function turtle(initName, initType, initSide)
+function turtle(initName, initType, initSide)
   -- the new instance
   local self = {
     -- public fields go in the instance table
@@ -85,6 +85,3 @@ local function turtle(initName, initType, initSide)
   	return nil
   end
 end
-
-local dean = turtle("Dean", "turtle", "left")
-dean.register()
