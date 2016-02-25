@@ -77,13 +77,20 @@ function qTurtle(initName, initType, initSide)
     return
   end
   
+  -- Tasks to run before moving
+  function self.preMove()
+    self.checkFuel()
+  end
+  
+  -- Tasks to run after moving
+  function self.postMove()
+    -- Mapping will go here
+  end
+  
   function self.checkFuel()
     local slot = turtle.getSelectedSlot()
     local fSuccess = false
     for i,fSlot in ipairs(self.fuelSlots) do
-      
-      print("Checking for fuel in slot "..fSlot)
-      
       turtle.select(fSlot)
       if turtle.getFuelLevel() ~= "unlimited" and turtle.getFuelLevel() < self.minimumFuelLevel then
         if turtle.refuel(1) then
@@ -103,9 +110,45 @@ function qTurtle(initName, initType, initSide)
   end
   
   function self.forward()
-    self.checkFuel()
-    print("Moving forward")
-    return turtle.forward()
+    self.preMove()
+    local ret = turtle.forward()
+    self.postMove()
+    return ret
+  end
+  
+  function self.bacl()
+    self.preMove()
+    local ret = turtle.back()
+    self.postMove()
+    return ret
+  end
+  
+  function self.up()
+    self.preMove()
+    local ret = turtle.up()
+    self.postMove()
+    return ret
+  end
+  
+  function self.down()
+    self.preMove()
+    local ret = turtle.down()
+    self.postMove()
+    return ret
+  end
+  
+  function self.turnLeft()
+    self.preMove()
+    local ret = turtle.turnLeft()
+    self.postMove()
+    return ret
+  end
+  
+  function self.turnRight()
+    self.preMove()
+    local ret = turtle.turnRight()
+    self.postMove()
+    return ret
   end
   
   if selfValid then
