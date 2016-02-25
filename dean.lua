@@ -6,4 +6,19 @@ dofile("qturtle")
 local dean = qTurtle("Dean", "turtle", "left")
 dean.register()
 
-dean.forward()
+print("I'm leaving.")
+
+while not turtle.inspect() do
+  dean.forward()
+end
+
+print("Oh no! A thing! Run away!")
+
+dean.turnRight()
+dean.turnRight()
+
+while not turtle.inspect() do
+  dean.forward()
+end
+
+print("Whew, that was scary")
