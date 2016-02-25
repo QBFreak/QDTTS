@@ -5,6 +5,27 @@ rednet.open("top")
 
 local myName = "Clara"
 
+function findTurtle(fTurtle)
+  local tID = nil
+  -- Determine whether fTurtle is a name or a number
+  if string.find(fTurtle, "[^%d]") then
+    -- Name, we need to look up the index number
+    for i,t in pairs(turtles) do
+      --print(t.name,t.name==fTurtle)
+      if string.lower(t.name) == string.lower(fTurtle) then
+        tID = i
+      end
+    end
+  else
+    -- Number, however it's likely a string. We need to convert it to a number
+    tID = fTurtle + 0
+  end
+  if tID == nil then
+    return nil
+  end
+  return turtles[tID]
+end
+
 function addTurtle(tID, tName, tType)
   if tID == nil then
     return false
@@ -14,6 +35,7 @@ function addTurtle(tID, tName, tType)
   turtleData.status = "idle"
   turtleData.priority = 0
   turtleData.type = tType
+  turtleData.rednet = tID
   turtles[tID] = turtleData
   return true
 end
@@ -146,25 +168,11 @@ while running do
       
       print("Console "..turtleName.." requested status of turtle "..queriedTurtle)
 
-      -- Determine whether queriedTurtle is a name or a number
-      if string.find(queriedTurtle, "[^%d]") then
-        -- Name, we need to look up the index number
-        for i,t in pairs(turtles) do
-          --print(t.name,t.name==queriedTurtle)
-          if string.lower(t.name) == string.lower(queriedTurtle) then
-            tID = i
-          end
-        end
-      else
-        -- Number, however it's a string. We need to convert it to a number
-        tID = queriedTurtle + 0
-      end
-      
-      if tID == nil then
+      local turtleData = findTurtle(queriedTurtle)
+      if turtleData == nil then
         rednet.broadcast("QUERYR "..myName.." "..queriedTurtle.." NOTFOUND", "QDTTS")
       else
-        local turtleData = turtles[tID]
-        local queryResponse = tID .. " "
+        local queryResponse = turtleData.rednet .. " "
         queryResponse = queryResponse .. turtleData.name .. " "
         queryResponse = queryResponse .. turtleData.status .. " "
         queryResponse = queryResponse .. turtleData.priority .. " "
