@@ -16,6 +16,7 @@ function qTurtle(initName, initType, initSide)
   local name = initName
   local side = initSide
   local type = initType
+  local serverNotifiedNoFuel = false
   
   if initName == "" then
     selfValid = false
@@ -95,6 +96,10 @@ function qTurtle(initName, initType, initSide)
       if turtle.getFuelLevel() ~= "unlimited" and turtle.getFuelLevel() < self.minimumFuelLevel then
         if turtle.refuel(1) then
           print("Refueled from slot "..fSlot)
+          if serverNotifiedNoFuel then
+            serverNotifiedNoFuel = false
+            rednet.broadcast("FUEL ".. name, "QDTTS")
+          end
           fSuccess = true
         end
       else
@@ -102,9 +107,10 @@ function qTurtle(initName, initType, initSide)
       end
     end
     turtle.select(slot)
-    if fSuccess == false then
-      print("Unable to refuel!")
-      -- TODO Notify server that turtle is out of fuel
+    if fSuccess == false and serverNotifiedNoFuel == false then
+      serverNotifiedNoFuel = true
+      print("Out of fuel")
+      rednet.broadcast("NOFUEL ".. name, "QDTTS")
     end
     return fSuccess
   end

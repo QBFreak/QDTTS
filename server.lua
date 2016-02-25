@@ -121,7 +121,16 @@ while running do
       end
     end
     
-    -- Turtle Status
+    -- Turtle Status --
+    -- Turtle out of fuel
+    if command == "NOFUEL" then
+      print(turtleName.." is out of fuel")
+    end
+    
+    -- Previously out of fuel turtle has been refueled
+    if command == "FUEL" then
+      print(turtleName.." has been refueled")
+    end
 
     -- Console commands --
     -- Shutdown the server
