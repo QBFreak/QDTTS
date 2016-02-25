@@ -55,50 +55,44 @@ if command == "query" then
     print("  Name or RedNet node number of the turtle you wish to query")
   else
     rednet.broadcast("QUERY "..myName.." "..queryID, "QDTTS")
-    local command = nil
+    local isResponse = false
     local ctr = 0
-    while (command ~= "QUERYR") and (ctr < 5) do
+    while (isResponse == false) and (ctr < 5) do
       ctr = ctr + 1
       id,msg = rednet.receive("QDTTS", 2)
 
-      if msg ~= nil then
-        message = {}
-        count = 1
-        for i in string.gmatch(msg, "%S+") do
-          message[count] = i
-          count = count + 1
-        end
-        if table.getn(message) > 0 then
-          command = message[1]
+      if type(msg) == "table" then
+        if msg.messageType == "Query Response" then
+          isResponse = true
         end
       end
     end
 
-    if command == nil then
+    if isResponse == false then
       print("Request timed out")
     else
-      if message[4] == "NOTFOUND" then
-        local server = message[2]
-        local rName = message[3]
-        print(server.." was unable to locate a turtle named '"..rName.."'")
+      local server = msg.serverName
+      local rName = msg.name
+      if msg.requestSuccess == false then
+        print(server .." was unable to locate a turtle named '".. rName .."'")
       else
-        if message[8] == nil then
-          print("Error: Malformed query response: "..msg)
-        else
-          local server = message[2]
-          local rID = message[3]
-          local rName = message[4]
-          local rStatus = message[5]
-          local rPriority = message[6]
-          local rType = message[7]
-          local rFuel = message[8]
-          print("------ " .. rName .. " ------")
-          print("RedNet ID:  " .. rID)
-          print("Type:       " .. rType)
-          print("Status:     " .. rStatus)
-          print("Priority:   " .. rPriority)
-          print("Fuel:       " .. rFuel)
+        local rID = msg.rednet
+        local rStatus = msg.status
+        local rPriority = msg.priority
+        local rType = msg.type
+        local rFuel = "Unknown"
+        if msg.nofuel == false then
+          rFuel = "OK"
         end
+        if msg.nofuel == true then
+          rFuel = "None"
+        end
+        print("------ " .. rName .. " ------")
+        print("RedNet ID:  " .. rID)
+        print("Type:       " .. rType)
+        print("Status:     " .. rStatus)
+        print("Priority:   " .. rPriority)
+        print("Fuel:       " .. rFuel)
       end
     end
   end

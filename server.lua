@@ -174,23 +174,24 @@ while running do
 
       local turtleData = findTurtle(queriedTurtle)
       if turtleData == nil then
-        rednet.broadcast("QUERYR "..myName.." "..queriedTurtle.." NOTFOUND", "QDTTS")
+        local queryData = {}
+        queryData.serverName = myName
+        queryData.messageType = "Query Response"
+        queryData.requestSuccess = false
+        queryData.name = queriedTurtle
+        rednet.send(id, queryData, "QDTTS")
       else
-        local queryResponse = turtleData.rednet .. " "
-        queryResponse = queryResponse .. turtleData.name .. " "
-        queryResponse = queryResponse .. turtleData.status .. " "
-        queryResponse = queryResponse .. turtleData.priority .. " "
-        queryResponse = queryResponse .. turtleData.type .. " "
-        if turtleData.nofuel == nil then
-          queryResponse = queryResponse .. "UNK"
-        end
-        if turtleData.nofuel == true then
-          queryResponse = queryResponse .. "NOFUEL"
-        end
-        if turtleData.nofuel == false then
-          queryResponse = queryResponse .. "FUEL"
-        end
-        rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
+        local queryData = {}
+        queryData.serverName = myName
+        queryData.messageType = "Query Response"
+        queryData.requestSuccess = true
+        queryData.rednet = turtleData.rednet
+        queryData.name = turtleData.name
+        queryData.status = turtleData.status
+        queryData.priority = turtleData.priority
+        queryData.type = turtleData.type
+        queryData.nofuel = turtleData.nofuel
+        rednet.send(id, queryData, "QDTTS")
       end
     end
     
