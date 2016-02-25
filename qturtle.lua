@@ -2,11 +2,12 @@
 --  Quick and Dirty Turtle Task System
 
 
-function turtle(initName, initType, initSide)
+function qTurtle(initName, initType, initSide)
   -- the new instance
   local self = {
     -- public fields go in the instance table
-    
+    fuelSlots = {16},
+    minimumFuelLevel = 1
   }
 
   -- private fields are implemented using locals
@@ -76,7 +77,36 @@ function turtle(initName, initType, initSide)
     return
   end
   
-  print(selfValid)
+  function self.checkFuel()
+    local slot = turtle.getSelectedSlot()
+    local fSuccess = false
+    for i,fSlot in ipairs(self.fuelSlots) do
+      
+      print("Checking for fuel in slot "..fSlot)
+      
+      turtle.select(fSlot)
+      if turtle.getFuelLevel() ~= "unlimited" and turtle.getFuelLevel() < self.minimumFuelLevel then
+        if turtle.refuel(1) then
+          print("Refueled from slot "..fSlot)
+          fSuccess = true
+        end
+      else
+        fSuccess = true
+      end
+    end
+    turtle.select(slot)
+    if fSuccess == false then
+      print("Unable to refuel!")
+      -- TODO Notify server that turtle is out of fuel
+    end
+    return fSuccess
+  end
+  
+  function self.forward()
+    self.checkFuel()
+    print("Moving forward")
+    return turtle.forward()
+  end
   
   if selfValid then
     -- return the instance
