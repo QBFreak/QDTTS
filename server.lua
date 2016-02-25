@@ -147,11 +147,15 @@ while running do
     -- Turtle out of fuel
     if command == "NOFUEL" then
       print(turtleName.." is out of fuel")
+      local turtleData = findTurtle(turtleName)
+      turtleData.nofuel = true
     end
     
     -- Previously out of fuel turtle has been refueled
     if command == "FUEL" then
       print(turtleName.." has been refueled")
+      local turtleData = findTurtle(turtleName)
+      turtleData.nofuel = false
     end
 
     -- Console commands --
@@ -176,7 +180,16 @@ while running do
         queryResponse = queryResponse .. turtleData.name .. " "
         queryResponse = queryResponse .. turtleData.status .. " "
         queryResponse = queryResponse .. turtleData.priority .. " "
-        queryResponse = queryResponse .. turtleData.type
+        queryResponse = queryResponse .. turtleData.type .. " "
+        if turtleData.nofuel == nil then
+          queryResponse = queryResponse .. "UNK"
+        end
+        if turtleData.nofuel == true then
+          queryResponse = queryResponse .. "NOFUEL"
+        end
+        if turtleData.nofuel == false then
+          queryResponse = queryResponse .. "FUEL"
+        end
         rednet.broadcast("QUERYR "..myName.." "..queryResponse, "QDTTS")
       end
     end

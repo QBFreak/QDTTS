@@ -82,7 +82,7 @@ if command == "query" then
         local rName = message[3]
         print(server.." was unable to locate a turtle named '"..rName.."'")
       else
-        if message[7] == nil then
+        if message[8] == nil then
           print("Error: Malformed query response: "..msg)
         else
           local server = message[2]
@@ -91,11 +91,13 @@ if command == "query" then
           local rStatus = message[5]
           local rPriority = message[6]
           local rType = message[7]
+          local rFuel = message[8]
           print("------ " .. rName .. " ------")
           print("RedNet ID:  " .. rID)
           print("Type:       " .. rType)
           print("Status:     " .. rStatus)
           print("Priority:   " .. rPriority)
+          print("Fuel:       " .. rFuel)
         end
       end
     end
