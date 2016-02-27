@@ -4,7 +4,7 @@ A hacked together project to get my feet wet with [ComputerCraft](http://www.com
 
 ### Server
 [server.lua](https://github.com/QBFreak/QDTTS/blob/master/server.lua)
-* Runs a continious loop listening for RedNet messages and responding to them
+* Runs a continuous loop listening for RedNet messages and responding to them
 * Maintains a list of all registered turtles
 * Maintains a list of tasks
 * Assigns pending tasks to idle turtles
@@ -25,7 +25,7 @@ A hacked together project to get my feet wet with [ComputerCraft](http://www.com
 [qturtle.lua](https://github.com/QBFreak/QDTTS/blob/master/qturtle.lua)
 Encapsulated in qTurtle object that the individual turtles can instantiate
 * Registers with the server
-* Provides move commands that handle fuel level monitoring and refuling
+* Provides move commands that handle fuel level monitoring and refueling
 * Notifies server if out of fuel, if no longer out of fuel
 
 ### Turtle instance
