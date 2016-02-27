@@ -107,7 +107,7 @@ if command == "addtask" then
   end
   
   tName = tArgs[2]
-  tPriority = tArgs[3]
+  tPriority = tonumber(tArgs[3])
   tType = tArgs[4]
   tFile = tArgs[5]
   
