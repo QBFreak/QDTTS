@@ -3,8 +3,6 @@
 
 rednet.open("top")
 
-local myName = "Clara"
-
 function findTurtle(fTurtle)
   local tID = nil
   -- Determine whether fTurtle is a name or a number
@@ -50,7 +48,7 @@ function addTask(tName, tPriority, tType, tFile)
   taskData.type = tType
   taskData.file = tFile
   taskData.status = "pending"
-  
+
   -- Check and see if we have any of the appropriate turtles free
   local turtleID = getAvailableTurtle(taskData)
   if turtleID ~= nil then
@@ -70,14 +68,14 @@ function getAvailableTurtle(task)
   if task == nil then
     return nil
   end
-  
+
   -- See if any turtles are idle
   for tID,tData in pairs(turtles) do
     if tData.status == "idle" then
       return tID
     end
   end
-  
+
   -- Looks like we couldn't find any free turtles
   return nil
 end
@@ -89,16 +87,16 @@ function assignTask(turtle, task)
   if turtle.status ~= idle then
     turtle.task = "incomplete"
   end
-  
+
   -- Assign the turtle the new task
   turtle.task = task
   turtle.status = "assigned"
   turtle.priority = task.priority
-  
+
   -- Update the task
   task.turtle = turtle
   task.status = "assigned"
-  
+
   -- Transmit the assignment
   rednet.broadcast("ASSIGN "..myName.." ".. turtle.name .." ".. task.file)
 end
@@ -106,29 +104,33 @@ end
 turtles = {}
 tasks = {}
 
+label = os.getComputerLabel()
+compid = "server" .. math.floor(math.random() * 100)
+myName = label or compid
+
 print("Server '"..myName.."' started.")
 rednet.broadcast("SERVER "..myName)
 
 local running = true
 while running do
   id,msg = rednet.receive("QDTTS")
-  
+
   message = {}
   count = 0
   for i in string.gmatch(msg, "%S+") do
     count = count + 1
     message[count] = i
   end
-  
+
   --print("RX("..count.."): "..msg)
-  
+
   if count > 1 then
     command = message[1]
     turtleName = message[2]
-    
+
     --if command == nil then print("ERR: command is nil!") end
     --if turtleName == nil then print("ERR: turtleName is nil!") end
-    
+
     --print("CMD: "..turtleName..": "..command)
 
     -- Turtle Registration
@@ -142,7 +144,7 @@ while running do
         print("Registration error. Type: "..turtleType.." Name: "..turtleName.." ID: "..id)
       end
     end
-    
+
     -- Turtle Status --
     -- Turtle out of fuel
     if command == "NOFUEL" then
@@ -150,7 +152,7 @@ while running do
       local turtleData = findTurtle(turtleName)
       turtleData.nofuel = true
     end
-    
+
     -- Previously out of fuel turtle has been refueled
     if command == "FUEL" then
       print(turtleName.." has been refueled")
@@ -169,7 +171,7 @@ while running do
     if command == "QUERY" then
       local queriedTurtle = message[3]
       local tID = nil
-      
+
       print("Console "..turtleName.." requested status of turtle "..queriedTurtle)
 
       local turtleData = findTurtle(queriedTurtle)
@@ -194,7 +196,7 @@ while running do
         rednet.send(id, queryData, "QDTTS")
       end
     end
-    
+
     -- List turtles
     if command == "LISTTURTLES" then
       print("Console "..turtleName.." requested a list of all turtles")
@@ -215,7 +217,7 @@ while running do
       end
       rednet.broadcast("LISTTURTLESR "..myName.." ENDLIST", "QDTTS")
     end
-    
+
     -- List tasks
     if command == "LISTTASKS" then
       print("Console "..turtleName.." requested a list of all tasks")
@@ -237,7 +239,7 @@ while running do
       end
       rednet.broadcast("LISTTASKSR "..myName.." ENDLIST", "QDTTS")
     end
-    
+
     -- Add a task to the task queue
     if command == "ADDTASK" then
       if message[3] == nil or message[4] == nil or message[5] == nil or message[6] == nil then
@@ -247,7 +249,7 @@ while running do
         local tPriority = message[4]
         local tType = message[5]
         local tFile = message[6]
-        print("Console "..turtleName.." added task "..tName.." ("..tFile..")")                
+        print("Console "..turtleName.." added task "..tName.." ("..tFile..")")
         addTask(tName, tPriority, tType, tFile)
       end
     end

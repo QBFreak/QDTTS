@@ -2,7 +2,6 @@
 --  Quick and Dirty Turtle Task System - Control console
 
 local tArgs = { ... }
-myName = "Everly"
 
 validCommands = {"addtask", "list", "query", "shutdown"}
 
@@ -19,6 +18,10 @@ function displayValidCommands()
   end
   print("Valid commands:"..validCmdString)
 end
+
+label = os.getComputerLabel()
+compid = "client" .. math.floor(math.random() * 100)
+myName = label or compid
 
 if table.getn(tArgs) == 0 then
   displayHelp()
@@ -105,22 +108,22 @@ if command == "addtask" then
     print("Example: client addtask foo normal turtle foo")
     return
   end
-  
+
   tName = tArgs[2]
   tPriority = tonumber(tArgs[3])
   tType = tArgs[4]
   tFile = tArgs[5]
-  
+
   if not type(tPriority) == "number" then
     print("The priority must be a number between 0 and 5 (inclusive)")
     return
   end
-  
+
   if tPriority < 0 or tPriority > 5 then
     print("The priority must be a number between 0 and 5 (inclusive)")
     return
   end
-  
+
   validTypes = {"turtle", "mining", "felling", "melee", "digging", "farming", "crafty"}
   validType = false
   for i,typ in ipairs(validTypes) do
@@ -128,7 +131,7 @@ if command == "addtask" then
       validType = true
     end
   end
-  
+
   if validType == false then
   print("Invalid turtle type.")
     local validTypesString = ""
@@ -138,7 +141,7 @@ if command == "addtask" then
     print("Valid types:"..validTypesString)
     return
   end
-  
+
   rednet.broadcast("ADDTASK "..myName.." "..tName.." "..tPriority.." "..tType.." "..tFile, "QDTTS")
   print("Added task "..tName)
 end
@@ -161,7 +164,7 @@ if command == "list" then
       if id == nil then
         timeouts = timeouts + 1
       end
-      
+
       message = {}
       count = 0
       if msg ~= nil then
@@ -169,10 +172,10 @@ if command == "list" then
           count = count + 1
           message[count] = i
         end
-        
+
         if count > 1 then
           local command = message[1]
-          
+
           if command == "LISTTURTLESR" or command == "LISTTASKSR" then
             if message[3] ~= "BEGINLIST" and message[3] ~= "LIST" and message[3] ~= "ENDLIST" then
               print("Malformed list packet received: "..msg)
@@ -181,7 +184,7 @@ if command == "list" then
                 print("Begin list from server ".. message[2])
                 started = true
               end
-              if message[3] == "ENDLIST" then             
+              if message[3] == "ENDLIST" then
                 print("End of list from server ".. message[2])
                 completed = true
               end
@@ -206,7 +209,7 @@ if command == "list" then
         end
       end
     end
-    
+
     if completed == false then
       print("No response from server!")
     end
