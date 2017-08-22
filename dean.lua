@@ -4,21 +4,24 @@
 dofile("qturtle.lua")
 
 local dean = qTurtle("Dean", "turtle", "right")
+dean.debugEnabled = true
 dean.register()
 
-print("I'm leaving.")
+-- print("I'm leaving.")
+--
+-- while not turtle.inspect() do
+--   dean.forward()
+-- end
+--
+-- print("Oh no! A thing! Run away!")
+--
+-- dean.turnRight()
+-- dean.turnRight()
+--
+-- while not turtle.inspect() do
+--   dean.forward()
+-- end
+--
+-- print("Whew, that was scary")
 
-while not turtle.inspect() do
-  dean.forward()
-end
-
-print("Oh no! A thing! Run away!")
-
-dean.turnRight()
-dean.turnRight()
-
-while not turtle.inspect() do
-  dean.forward()
-end
-
-print("Whew, that was scary")
+dean.queryTask()
