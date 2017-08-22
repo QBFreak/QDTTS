@@ -126,7 +126,7 @@ function qTurtle(initName, initType, initSide)
     return ret
   end
 
-  function self.bacl()
+  function self.back()
     self.preMove()
     local ret = turtle.back()
     self.postMove()
