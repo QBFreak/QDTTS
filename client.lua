@@ -3,7 +3,7 @@
 
 local tArgs = { ... }
 
-validCommands = {"addtask", "list", "query", "shutdown"}
+validCommands = {"addtask", "list", "query", "shutdown", "sendraw"}
 
 function displayHelp()
   print("QDTTS Control Console")
@@ -214,4 +214,18 @@ if command == "list" then
       print("No response from server!")
     end
   end
+end
+
+-- Send a raw command over rednet
+if command == "sendraw" then
+    local rawcmd = table.concat(tArgs, " ", 2)
+    rednet.broadcast(rawcmd, "QDTTS")
+    print("Raw command sent:")
+    print(rawcmd)
+    local sndr, msg, proto = rednet.receive("QDTTS", 5)
+    if sndr == nil then
+        print("No response.")
+    else
+        print(sndr .. ": " .. msg)
+    end
 end

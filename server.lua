@@ -133,6 +133,12 @@ while running do
 
     --print("CMD: "..turtleName..": "..command)
 
+    -- Server alive?
+    if command == "PING" then
+        print("Ping from " .. turtleName)
+        rednet.broadcast("PONG " .. myName, "QDTTS")
+    end
+
     -- Turtle Registration
     if command == "HELLO" then
       local turtleType = message[3]
