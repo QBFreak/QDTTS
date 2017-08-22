@@ -7,7 +7,8 @@ function qTurtle(initName, initType, initSide)
   local self = {
     -- public fields go in the instance table
     fuelSlots = {16},
-    minimumFuelLevel = 1
+    minimumFuelLevel = 1,
+    debugEnabled = false,
   }
 
   -- private fields are implemented using locals
@@ -19,7 +20,7 @@ function qTurtle(initName, initType, initSide)
   local serverNotifiedNoFuel = false
 
   if initName == "" then
-      print("DEBUG: initName is blank!")
+      self.debug("initName is blank!")
     selfValid = false
   end
 
@@ -31,12 +32,12 @@ function qTurtle(initName, initType, initSide)
     end
   end
   if validType == false then
-      print("DEBUG: validType is false")
+      self.debug("validType is false")
     selfValid = false
   end
 
   if peripheral.getType(side) ~= "modem" then
-      print("DEBUG: Side peripheral is not a modem!")
+      self.debug("Side peripheral is not a modem!")
     selfValid = false
   end
 
@@ -160,11 +161,29 @@ function qTurtle(initName, initType, initSide)
     return ret
   end
 
+  function self.queryTask()
+      self.debug("Asking server for a task")
+      rednet.broadcast("NEXTTASK " .. name, "QDTTS")
+      local id, msg, proto = rednet.receive("QDTTS", 5)
+      if msg == nil then
+          self.debug("No task returned")
+          return
+      else
+          self.debug("Task: " .. msg)
+      end
+  end
+
+  function debug(str)
+      if self.debugEnabled then
+          print("DEBUG: " .. str)
+      end
+  end
+
   if selfValid then
     -- return the instance
     return self
   else
-    print("DEBUG: Self is INVALID!")
+    self.debug("Self is INVALID!")
     return nil
   end
 end
