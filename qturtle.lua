@@ -17,11 +17,12 @@ function qTurtle(initName, initType, initSide)
   local side = initSide
   local type = initType
   local serverNotifiedNoFuel = false
-  
+
   if initName == "" then
+      print("DEBUG: initName is blank!")
     selfValid = false
   end
-  
+
   local validTypes = {"turtle", "mining", "felling", "melee", "digging", "farming", "crafty"}
   local validType = false
   for i,typ in ipairs(validTypes) do
@@ -30,16 +31,18 @@ function qTurtle(initName, initType, initSide)
     end
   end
   if validType == false then
+      print("DEBUG: validType is false")
     selfValid = false
   end
-  
+
   if peripheral.getType(side) ~= "modem" then
+      print("DEBUG: Side peripheral is not a modem!")
     selfValid = false
   end
-  
+
   function self.register()
     rednet.open(side)
-    
+
     local tries = 0
     local success = false
     while tries < 6 and success == false do
@@ -47,7 +50,7 @@ function qTurtle(initName, initType, initSide)
       rednet.broadcast("HELLO ".. name .." ".. type, "QDTTS")
       id,msg = rednet.receive("QDTTS", 5)
       tries = tries + 1
-      
+
       message = {}
       count = 0
       if msg ~= nil then
@@ -55,10 +58,10 @@ function qTurtle(initName, initType, initSide)
           count = count + 1
           message[count] = i
         end
-        
+
         if count > 1 then
           command = message[1]
-          
+
           if command == "SERVER" then
             if message[2] == nil then
               print("Malformed SERVER packet received: "..msg)
@@ -70,24 +73,24 @@ function qTurtle(initName, initType, initSide)
         end
       end
     end
-    
+
     if success == false then
       print("No response from server!")
     end
-    
+
     return
   end
-  
+
   -- Tasks to run before moving
   function self.preMove()
     self.checkFuel()
   end
-  
+
   -- Tasks to run after moving
   function self.postMove()
     -- Mapping will go here
   end
-  
+
   function self.checkFuel()
     local slot = turtle.getSelectedSlot()
     local fSuccess = false
@@ -114,53 +117,54 @@ function qTurtle(initName, initType, initSide)
     end
     return fSuccess
   end
-  
+
   function self.forward()
     self.preMove()
     local ret = turtle.forward()
     self.postMove()
     return ret
   end
-  
+
   function self.bacl()
     self.preMove()
     local ret = turtle.back()
     self.postMove()
     return ret
   end
-  
+
   function self.up()
     self.preMove()
     local ret = turtle.up()
     self.postMove()
     return ret
   end
-  
+
   function self.down()
     self.preMove()
     local ret = turtle.down()
     self.postMove()
     return ret
   end
-  
+
   function self.turnLeft()
     self.preMove()
     local ret = turtle.turnLeft()
     self.postMove()
     return ret
   end
-  
+
   function self.turnRight()
     self.preMove()
     local ret = turtle.turnRight()
     self.postMove()
     return ret
   end
-  
+
   if selfValid then
     -- return the instance
     return self
   else
+    print("DEBUG: Self is INVALID!")
     return nil
   end
 end
