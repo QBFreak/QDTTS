@@ -3,7 +3,7 @@
 
 local tArgs = { ... }
 
-validCommands = {"addtask", "list", "query", "shutdown", "sendraw"}
+validCommands = {"addtask", "list", "query", "shutdown", "sendraw", "ping", "getloc"}
 
 function displayHelp()
   print("QDTTS Control Console")
@@ -229,3 +229,34 @@ if command == "sendraw" then
         print(sndr .. ": " .. msg)
     end
 end
+
+-- Ping the server to see if it's up
+if command == "ping" then
+    rednet.broadcast("PING "..myName, "QDTTS")
+    print("Ping sent to server")
+    local sndr, msg, proto = rednet.receive("QDTTS", 5)
+    if sndr == nil then
+        print("No response")
+    else
+        print(msg)
+    end
+end
+
+-- Request a location from the server
+if command == "getloc" then
+    locName = tArgs[2]
+    if locName == nil then
+        print("Usage: client getloc <name>")
+        return
+    end
+    rednet.broadcast("GETLOC "..myName.." "..locName, "QDTTS")
+    local sndr, msg, proto = rednet.receive("QDTTS", 5)
+    if sndr == nil then
+        print("No answer from server")
+        return
+    else
+        print(msg)
+    end
+end
+
+rednet.close()
