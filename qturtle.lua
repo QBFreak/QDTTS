@@ -151,32 +151,50 @@ function qTurtle(initName, initType, initSide)
     -- Mapping will go here
   end
 
-  function self.checkFuel()
-    local slot = turtle.getSelectedSlot()
-    local fSuccess = false
-    for i,fSlot in ipairs(self.fuelSlots) do
-      turtle.select(fSlot)
-      if turtle.getFuelLevel() ~= "unlimited" and turtle.getFuelLevel() < self.minimumFuelLevel then
-        if turtle.refuel(1) then
-          print("Refueled from slot "..fSlot)
-          if serverNotifiedNoFuel then
-            serverNotifiedNoFuel = false
-            rednet.broadcast("FUEL ".. name, "QDTTS")
-          end
-          fSuccess = true
+    function self.checkFuel()
+        -- Store the currently selected slot so we can come back to it
+        local slot = turtle.getSelectedSlot()
+        local fSuccess = false
+        if turtle.getFuelLevel() == "unlimited" then
+            -- No fuel necessary
+            return true
         end
-      else
-        fSuccess = true
-      end
+        if turtle.getFuelLevel() >= self.minimumFuelLevel then
+            -- We don't need fuel yet
+            return true
+        end
+
+        -- Refuel until we have the minimum amount of fuel
+        while turtle.getFuelLevel() < self.minimumFuelLevel do
+            -- Check all of the slots designated for fuel
+            for i,fSlot in ipairs(self.fuelSlots) do
+                turtle.select(fSlot)
+                -- Refuel one block from the current slot
+                if turtle.refuel(1) then
+                    print("Refueled from slot "..fSlot)
+                    -- Does the server think we're out of fuel?
+                    if serverNotifiedNoFuel then
+                        -- Tell it otherwise
+                        serverNotifiedNoFuel = false
+                        rednet.broadcast("FUEL ".. name, "QDTTS")
+                    end
+                    -- Success fueling
+                    fSuccess = true
+                end
+            end
+        end
+        -- Select the originally selected slot
+        turtle.select(slot)
+        -- If we failed to fuel and we haven't told the server we're out yet...
+        if fSuccess == false and serverNotifiedNoFuel == false then
+            -- Make the announcement
+            serverNotifiedNoFuel = true
+            print("Out of fuel")
+            rednet.broadcast("NOFUEL ".. name, "QDTTS")
+        end
+        -- Return the status from above
+        return fSuccess
     end
-    turtle.select(slot)
-    if fSuccess == false and serverNotifiedNoFuel == false then
-      serverNotifiedNoFuel = true
-      print("Out of fuel")
-      rednet.broadcast("NOFUEL ".. name, "QDTTS")
-    end
-    return fSuccess
-  end
 
   function self.forward()
     self.preMove()
@@ -446,7 +464,7 @@ function qTurtle(initName, initType, initSide)
             -- self.debug("CURR "..tx.." "..ty.." "..tz)
             -- self.debug("DIFF "..dx.." "..dy.." "..dz)
 
-            if dx > dz then
+            if dx > dz or (dx > 0 and dx == dz) then
                 self.debug("Step towards X")
                 -- Step towards X
                 if tx > x then
@@ -560,8 +578,27 @@ function qTurtle(initName, initType, initSide)
               return false
           end
       end
-      while facing ~= direction do
+
+      if facing == self.North() and direction == self.West() then
+          self.turnLeft()
+      elseif facing == self.North() and direction == self.East() then
           self.turnRight()
+      elseif facing == self.East() and direction == self.North() then
+          self.turnLeft()
+      elseif facing == self.East() and direction == self.South() then
+          self.turnRight()
+      elseif facing == self.South() and direction == self.East() then
+          self.turnLeft()
+      elseif facing == self.South() and direction == self.West() then
+          self.turnRight()
+      elseif facing == self.West() and direction == self.North() then
+          self.turnRight()
+      elseif facing == self.West() and direction == self.South() then
+          self.turnLeft()
+      else
+          while facing ~= direction do
+              self.turnRight()
+          end
       end
       return true
   end
