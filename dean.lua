@@ -1,27 +1,17 @@
 -- dean.lua v1.0 - Dean Winchester - He's been to hell and back. Litterally.
 --  Quick and Dirty Turtle Task System - Client
 
+local tArgs = { ... }
+
 dofile("qturtle.lua")
 
 local dean = qTurtle("Dean", "turtle", "right")
 dean.debugEnabled = true
 dean.register()
 
--- print("I'm leaving.")
---
--- while not turtle.inspect() do
---   dean.forward()
--- end
---
--- print("Oh no! A thing! Run away!")
---
--- dean.turnRight()
--- dean.turnRight()
---
--- while not turtle.inspect() do
---   dean.forward()
--- end
---
--- print("Whew, that was scary")
+local taskName = tArgs[1] or "survey"
 
-dean.queryTask()
+-- Run the survey code
+dofile(taskName .. ".lua")
+local st = task(dean)
+st.run()
