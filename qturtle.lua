@@ -393,7 +393,11 @@ function qTurtle(initName, initType, initSide)
           count = count + 1
       end
       if count ~= 6 then
-          self.debug("Location failed: Wrong answer length ("..count.."/6)")
+          if tblTmp[0] == "BADLOC" then
+              self.debug("Location failed: Not in database")
+          else
+              self.debug("Location failed: Wrong answer length ("..count.."/6)")
+          end
           return nil
       end
       local tblLoc = {}
@@ -405,53 +409,83 @@ function qTurtle(initName, initType, initSide)
       return tblLoc
   end
 
-  function self.navTo(x, y, z)
-      while true do
-          if turtle.getFuelLevel() == 0 then
-              self.debug("Navigation failed, out of fuel")
-              return false
-          end
-          if facing == nil then
-              if self.orient() == false then
-                  self.debug("Navigation failed, could not orient turtle")
-                  return false
-              end
-          end
-          local tx, ty, tz = gps.locate(5)
-          if tx == nil then
-              -- Failed to get a GPS lock
-              self.debug("Navigation failed, could not get GPS location")
-              return false
-          end
-          self.debug("DEST "..x.." "..y.." "..z)
-          self.debug("CURR "..tx.." "..ty.." "..tz)
-          if x >= y and x >= z then
-              -- Step towards X
-              if tx > x then
-                  -- Step towards X==0
-                  self.face(self.West())
-              else
-                  -- Step away from X==0
-                  self.face(self.East())
-              end
-              self.forwardClimb()
-          elseif y >= x and y >= z then
-              -- Step towards Y
-              -- How to we resolve moving towards Y and moving above/below terrain?
-              self.forwardClimb()
-          else
-              -- Step towards Z
-              if tz > z then
-                  -- Step towards Z==0
-                  self.face(self.North())
-              else
-                  -- Step away from Z==0
-                  self.face(self.South())
-              end
-              self.forwardClimb()
-          end
-      end
-  end
+    function self.navTo(x, y, z)
+        -- x, y, z == Destination
+        x = tonumber(x)
+        y = tonumber(y)
+        z = tonumber(z)
+        while true do
+            if turtle.getFuelLevel() == 0 then
+                self.debug("Navigation failed, out of fuel")
+                return false
+            end
+            if facing == nil then
+                if self.orient() == false then
+                    self.debug("Navigation failed, could not orient turtle")
+                    return false
+                end
+            end
+            -- Turtle location
+            local tx, ty, tz = gps.locate(5)
+            if tx == nil then
+                -- Failed to get a GPS lock
+                self.debug("Navigation failed, could not get GPS location")
+                return false
+            end
+            -- Are we there yet?
+            if tx == x and ty == y and tz == z then
+                return true
+            end
+            -- Distance remaining
+            dx = math.abs(x - tx)
+            dy = math.abs(y - ty)
+            dz = math.abs(z - tz)
+
+            -- self.debug("---------------")
+            -- self.debug("DEST "..x.." "..y.." "..z)
+            -- self.debug("CURR "..tx.." "..ty.." "..tz)
+            -- self.debug("DIFF "..dx.." "..dy.." "..dz)
+
+            if dx > dz then
+                self.debug("Step towards X")
+                -- Step towards X
+                if tx > x then
+                    -- Step towards X==0
+                    self.face(self.West())
+                    self.debug("Face: West")
+                else
+                    -- Step away from X==0
+                    self.face(self.East())
+                    self.debug("Face: East")
+                end
+                self.forwardClimb()
+            elseif dz > dx then
+                self.debug("Step towards Z")
+                -- Step towards Z
+                if tz > z then
+                    -- Step towards Z==0
+                    self.face(self.North())
+                    self.debug("Face: North")
+                else
+                    -- Step away from Z==0
+                    self.face(self.South())
+                    self.debug("Face: South")
+                end
+                self.forwardClimb()
+            -- elseif dy >= dx and dy >= dz then
+            else
+                self.debug("Step towards Y")
+                self.debug("err, kinda")
+                -- Step towards Y
+                -- How to we resolve moving towards Y and moving above/below terrain?
+                if ty > y then
+                    self.down()
+                elseif ty < y then
+                    self.up()
+                end
+            end
+        end
+    end
 
   function self.navToName(locName)
       tblLoc = self.getLoc(locName)
