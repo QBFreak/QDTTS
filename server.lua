@@ -96,13 +96,7 @@ end
 
 -- Retrieve a location from the location table by name, or nil if not found
 function getLoc(lName)
-    -- Check and see if it exists in the table
-    if type(locations[lName]) ~= nil then
-        -- Location exists, return it
-        return locations[lName]
-    end
-    -- Not found, return nil
-    return nil
+    return locations[lName]
 end
 
 -- Assign a task to a turtle
@@ -138,6 +132,7 @@ function load()
         local tblTmp = {}
         local count = 0
         while line ~= nil do
+            -- print("# "..line)
             tblTmp = {}
             count = 0
             for i in string.gmatch(line, "%S+") do
@@ -150,7 +145,11 @@ function load()
                 tblLoc.x = tblTmp[1]
                 tblLoc.y = tblTmp[2]
                 tblLoc.z = tblTmp[3]
-                locations[#locations + 1] = tblLoc
+                print("- "..tblLoc.name.." "..tblLoc.x.." "..tblLoc.y.." "..tblLoc.z)
+                locations[tblLoc.name] = tblLoc
+            else
+                print("ERROR: Bad location in database:")
+                print(line)
             end
             line = locFile.readLine()
         end
@@ -355,7 +354,7 @@ while running do
       end
     end
 
-    -- Store a location
+    -- Store a location: SAVELOC sender locName X Y Z
     if command == "SAVELOC" then
         if message[3] == nil or message[4] == nil or message[5] == nil or message[6] == nil then
             print("Malformed SAVELOC packet received from "..id..": "..msg)
@@ -375,7 +374,7 @@ while running do
             print("Malformed GETLOC packet received from "..id..": "..msg)
         else
             local lName = message[3]
-            print("Console "..turtleName.." requested location "..lName)
+            print(turtleName.." requested location "..lName)
             local tblLoc = getLoc(lName)
             if tblLoc == nil then
                 -- Location not in database
