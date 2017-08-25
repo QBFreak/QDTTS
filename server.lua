@@ -61,6 +61,20 @@ function addTask(tName, tPriority, tType, tFile)
   return true
 end
 
+function addLoc(lName, lX, lY, lZ)
+    if lName == nil then
+        return false
+    end
+    local locData = {}
+    locData.name = lName
+    locData.x = lX
+    locData.y = lY
+    locData.z = lZ
+    -- Store the location by NAME
+    locations[lName] = locData
+    return true
+end
+
 -- Finds the next available turtle to take <task>
 --  Returns index of turtle if a turtle is found
 --  Returns nil if no turtle is available
@@ -78,6 +92,17 @@ function getAvailableTurtle(task)
 
   -- Looks like we couldn't find any free turtles
   return nil
+end
+
+-- Retrieve a location from the location table by name, or nil if not found
+function getLoc(lName)
+    -- Check and see if it exists in the table
+    if type(locations[lName]) ~= nil then
+        -- Location exists, return it
+        return locations[lName]
+    end
+    -- Not found, return nil
+    return nil
 end
 
 -- Assign a task to a turtle
@@ -101,19 +126,82 @@ function assignTask(turtle, task)
   rednet.broadcast("ASSIGN "..myName.." ".. turtle.name .." ".. task.file)
 end
 
+-- Initialize the server
+function load()
+    print("Server '"..myName.."' starting.")
+    print("Loading locations from database")
+    locFile = fs.open(".locations.tab", "r")
+    if locFile == nil then
+        print("No location database found. First run?")
+    else
+        local line = locFile.readLine()
+        local tblTmp = {}
+        local count = 0
+        while line ~= nil do
+            tblTmp = {}
+            count = 0
+            for i in string.gmatch(line, "%S+") do
+                tblTmp[count] = i
+                count = count + 1
+            end
+            if count == 4 then
+                local tblLoc = {}
+                tblLoc.name = tblTmp[0]
+                tblLoc.x = tblTmp[1]
+                tblLoc.y = tblTmp[2]
+                tblLoc.z = tblTmp[3]
+                locations[#locations + 1] = tblLoc
+            end
+            line = locFile.readLine()
+        end
+        locFile.close()
+    end
+    print(#locations.." locations loaded")
+
+    -- Announce server started
+    rednet.broadcast("SERVER "..myName, protocol)
+    print("Server started.")
+end
+
+-- Prepare the server to shutdown
+function shutdown()
+    -- Announce we are no longer available
+    rednet.broadcast("GOODBYE "..myName, protocol)
+    print("Console "..turtleName.." requested a shutdown")
+
+    print("Writing locations to database")
+    locFile = fs.open(".locations.tab", "w")
+    if locFile == nil then
+        print("Error writing to database, locations lost!")
+    else
+        for index,locData in pairs(locations) do
+            locFile.writeLine(locData.name .. " " .. locData.x .. " " .. locData.y .. " " .. locData.z)
+        end
+        locFile.close()
+    end
+    print(#locations.." locations saved")
+    rednet.close()
+    print("Shutting down.")
+end
+
+-- Init globals
 turtles = {}
 tasks = {}
+locations = {}
 
+-- Constants
 label = os.getComputerLabel()
 compid = "server" .. math.floor(math.random() * 100)
 myName = label or compid
+protocol = "QDTTS"
 
-print("Server '"..myName.."' started.")
-rednet.broadcast("SERVER "..myName)
+-- Init the server
+load()
 
+-- Start the server
 local running = true
 while running do
-  id,msg = rednet.receive("QDTTS")
+  id,msg = rednet.receive(protocol)
 
   message = {}
   count = 0
@@ -136,14 +224,14 @@ while running do
     -- Server alive?
     if command == "PING" then
         print("Ping from " .. turtleName)
-        rednet.broadcast("PONG " .. myName, "QDTTS")
+        rednet.broadcast("PONG " .. myName, protocol)
     end
 
     -- Turtle Registration
     if command == "HELLO" then
       local turtleType = message[3]
       print("Greeting "..turtleName)
-      rednet.broadcast("SERVER "..myName, "QDTTS")
+      rednet.broadcast("SERVER "..myName, protocol)
       if addTurtle(id, turtleName, turtleType) then
         print("Registered new "..turtleType..", "..turtleName..", ID "..id)
       else
@@ -169,10 +257,17 @@ while running do
     -- Console commands --
     -- Shutdown the server
     if command == "SHUTDOWN" then
-      print("Console "..turtleName.." requested a shutdown")
-      rednet.broadcast("GOODBYE "..myName, "QDTTS")
-      running = false
+        shutdown()
+        running = false
     end
+
+    if command == "RESTART" then
+        shutdown()
+        running = false
+        print("Restarting...")
+        shell.run("reboot")
+    end
+
     -- Query a Turtle's status
     if command == "QUERY" then
       local queriedTurtle = message[3]
@@ -187,7 +282,7 @@ while running do
         queryData.messageType = "Query Response"
         queryData.requestSuccess = false
         queryData.name = queriedTurtle
-        rednet.send(id, queryData, "QDTTS")
+        rednet.send(id, queryData, protocol)
       else
         local queryData = {}
         queryData.serverName = myName
@@ -199,14 +294,14 @@ while running do
         queryData.priority = turtleData.priority
         queryData.type = turtleData.type
         queryData.nofuel = turtleData.nofuel
-        rednet.send(id, queryData, "QDTTS")
+        rednet.send(id, queryData, protocol)
       end
     end
 
     -- List turtles
     if command == "LISTTURTLES" then
       print("Console "..turtleName.." requested a list of all turtles")
-      rednet.broadcast("LISTTURTLESR "..myName.." BEGINLIST", "QDTTS")
+      rednet.broadcast("LISTTURTLESR "..myName.." BEGINLIST", protocol)
       for index,turtle in pairs(turtles) do
         local listResponse = "LISTTURTLESR "..myName.." LIST "
         listResponse = listResponse.. index .." "
@@ -219,15 +314,15 @@ while running do
         else
           listResponse = listResponse.." YES"
         end
-        rednet.broadcast(listResponse, "QDTTS")
+        rednet.broadcast(listResponse, protocol)
       end
-      rednet.broadcast("LISTTURTLESR "..myName.." ENDLIST", "QDTTS")
+      rednet.broadcast("LISTTURTLESR "..myName.." ENDLIST", protocol)
     end
 
     -- List tasks
     if command == "LISTTASKS" then
       print("Console "..turtleName.." requested a list of all tasks")
-      rednet.broadcast("LISTTASKSR "..myName.." BEGINLIST", "QDTTS")
+      rednet.broadcast("LISTTASKSR "..myName.." BEGINLIST", protocol)
       for index,task in pairs(tasks) do
         local listResponse = "LISTTASKSR "..myName.." LIST "
         listResponse = listResponse.. index .." "
@@ -241,9 +336,9 @@ while running do
         else
           listResponse = listResponse.." YES"
         end
-        rednet.broadcast(listResponse, "QDTTS")
+        rednet.broadcast(listResponse, protocol)
       end
-      rednet.broadcast("LISTTASKSR "..myName.." ENDLIST", "QDTTS")
+      rednet.broadcast("LISTTASKSR "..myName.." ENDLIST", protocol)
     end
 
     -- Add a task to the task queue
@@ -258,6 +353,41 @@ while running do
         print("Console "..turtleName.." added task "..tName.." ("..tFile..")")
         addTask(tName, tPriority, tType, tFile)
       end
+    end
+
+    -- Store a location
+    if command == "SAVELOC" then
+        if message[3] == nil or message[4] == nil or message[5] == nil or message[6] == nil then
+            print("Malformed SAVELOC packet received from "..id..": "..msg)
+        else
+            local lName = message[3]
+            local lX = message[4]
+            local lY = message[5]
+            local lZ = message[6]
+            print("Console "..turtleName.." added location "..lName.."("..lX..","..lY..","..lZ..")")
+            addLoc(lName, lX, lY, lZ)
+        end
+    end
+
+    -- Retrieve a location
+    if command == "GETLOC" then
+        if message[3] == nil then
+            print("Malformed GETLOC packet received from "..id..": "..msg)
+        else
+            local lName = message[3]
+            print("Console "..turtleName.." requested location "..lName)
+            local tblLoc = getLoc(lName)
+            if tblLoc == nil then
+                -- Location not in database
+                rednet.broadcast("BADLOC "..myName.." "..lName, protocol)
+                print("Response: BADLOC")
+            else
+                -- Return location
+                local sLoc = tblLoc.name .. " " .. tblLoc.x .. " " .. tblLoc.y .. " " .. tblLoc.z
+                rednet.broadcast("LOC "..myName.." "..sLoc, protocol)
+                print("Response: LOC "..sLoc)
+            end
+        end
     end
   else
     print("Malformed packet received from "..id..": "..msg)
