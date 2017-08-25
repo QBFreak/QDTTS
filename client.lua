@@ -3,7 +3,7 @@
 
 local tArgs = { ... }
 
-validCommands = {"addtask", "list", "query", "shutdown", "sendraw", "ping", "getloc", "restart"}
+validCommands = {"ping", "addtask", "list", "query", "shutdown", "restart", "getloc", "saveloc", "sendraw"}
 
 function displayHelp()
   print("QDTTS Control Console")
@@ -257,6 +257,27 @@ if command == "getloc" then
     else
         print(msg)
     end
+end
+
+if command == "saveloc" then
+    -- Get the params
+    local locName = tArgs[2]
+    local x = tArgs[3]
+    local y = tArgs[4]
+    local z = tArgs[5]
+    -- Make sure they're all good
+    if locName == nil then
+        print("You must specify a location name")
+    end
+    if x == nil or y == nil or z == nil then
+        print("You must specify a location")
+    end
+    if locName == nil or x == nil or y == nil or z == nil then
+        print("Usage: client saveloc <name> <x> <y> <z>")
+        return
+    end
+    rednet.broadcast("SAVELOC "..myName.." "..locName.." "..x.." ".." "..y.." "..z, "QDTTS")
+    print("Location sent to server")
 end
 
 -- Restart the server
