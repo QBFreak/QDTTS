@@ -3,7 +3,7 @@
 
 local tArgs = { ... }
 
-validCommands = {"addtask", "list", "query", "shutdown", "sendraw", "ping", "getloc"}
+validCommands = {"addtask", "list", "query", "shutdown", "sendraw", "ping", "getloc", "restart"}
 
 function displayHelp()
   print("QDTTS Control Console")
@@ -254,6 +254,18 @@ if command == "getloc" then
     if sndr == nil then
         print("No answer from server")
         return
+    else
+        print(msg)
+    end
+end
+
+-- Restart the server
+if command == "restart" then
+    rednet.broadcast("RESTART "..myName, "QDTTS")
+    print("Restart request sent to server")
+    local sndr, msg, proto = rednet.receive("QDTTS", 5)
+    if sndr == nil then
+        print("No response")
     else
         print(msg)
     end
