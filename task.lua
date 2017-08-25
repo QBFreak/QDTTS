@@ -16,6 +16,7 @@ function task(qtobj)
     print(self.name)
 
     -- Put some functions here
+    -- self.run() - the main task body
     function self.run()
         qt.init()
 
@@ -26,7 +27,7 @@ function task(qtobj)
         qt.sink()
 
         -- Get the block below the turtle
-        succ, blk = turtle.inspectDown()
+        local succ, blk = turtle.inspectDown()
         -- Move forward until we find something different
         qt.forwardWhile(blk.name)
 
