@@ -7,7 +7,7 @@ function qTurtle(initName, initType, initSide)
   local self = {
     -- public fields go in the instance table
     fuelSlots = {16},
-    minimumFuelLevel = 1,
+    minimumFuelLevel = 4,
     debugEnabled = false,
   }
 
@@ -433,10 +433,6 @@ function qTurtle(initName, initType, initSide)
         y = tonumber(y)
         z = tonumber(z)
         while true do
-            if turtle.getFuelLevel() == 0 then
-                self.debug("Navigation failed, out of fuel")
-                return false
-            end
             if facing == nil then
                 if self.orient() == false then
                     self.debug("Navigation failed, could not orient turtle")
@@ -465,35 +461,35 @@ function qTurtle(initName, initType, initSide)
             -- self.debug("DIFF "..dx.." "..dy.." "..dz)
 
             if dx > dz or (dx > 0 and dx == dz) then
-                self.debug("Step towards X")
+                -- self.debug("Step towards X")
                 -- Step towards X
                 if tx > x then
                     -- Step towards X==0
                     self.face(self.West())
-                    self.debug("Face: West")
+                    -- self.debug("Face: West")
                 else
                     -- Step away from X==0
                     self.face(self.East())
-                    self.debug("Face: East")
+                    -- self.debug("Face: East")
                 end
                 self.forwardClimb()
             elseif dz > dx then
-                self.debug("Step towards Z")
+                -- self.debug("Step towards Z")
                 -- Step towards Z
                 if tz > z then
                     -- Step towards Z==0
                     self.face(self.North())
-                    self.debug("Face: North")
+                    -- self.debug("Face: North")
                 else
                     -- Step away from Z==0
                     self.face(self.South())
-                    self.debug("Face: South")
+                    -- self.debug("Face: South")
                 end
                 self.forwardClimb()
             -- elseif dy >= dx and dy >= dz then
             else
-                self.debug("Step towards Y")
-                self.debug("err, kinda")
+                -- self.debug("Step towards Y")
+                -- self.debug("err, kinda")
                 -- Step towards Y
                 -- How to we resolve moving towards Y and moving above/below terrain?
                 if ty > y then
